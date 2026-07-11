@@ -202,7 +202,6 @@ class Library:
             print("This book is already borrowed.")
 
     def return_book(self):
-        self.view_books()
         member = self.check_member_id()
         if member is None:
             return
