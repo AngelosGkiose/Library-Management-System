@@ -203,7 +203,7 @@ class Library:
 
     def return_book(self):
         self.view_books()
-        member=self.check_member_id()
+        member = self.check_member_id()
         if member is None:
             return
         book = self.check_book_isbn()
@@ -212,8 +212,17 @@ class Library:
         if not member.has_borrowed(book):
             print("This book isn't yours.")
             return
+
+        days = book.days_borrowed()  
+
         book.return_book()
         member.remove_borrowed_book(book)
         save_books(self.books)
         save_members(self.members)
+
         print(f"Book {book.title} returned successfully by {member.name}!")
+
+        if days > MAX_DAYS:
+            overdue_days = days - MAX_DAYS
+            fine = overdue_days * FINE_PER_DAY
+            print(f"Late return: {overdue_days} days overdue. Fine: €{fine:.2f}")

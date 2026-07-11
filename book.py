@@ -27,6 +27,11 @@ class Book:
         self.borrow_date =None
         self.available = True
         return True
+    
+    def days_borrowed(self):
+        if self.borrow_date is None:
+            return 0
+        return (datetime.now() - self.borrow_date).days
 
     def to_dict(self):
         return {
