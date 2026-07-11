@@ -1,55 +1,113 @@
 #  Library Management System
 
-A command-line Library Management System built with Python using Object-Oriented Programming (OOP).
+A command-line Library Management System built with Python using Object-Oriented Programming.
 
-The application allows users to manage a library by adding, searching, deleting, borrowing, and returning books while storing data in a JSON file.
-
----
+The application allows users to manage books and library members, borrow and return books, and persist all data using JSON files.
 
 ## Features
 
--  View all books
--  Add new books
--  Delete books
--  Search books by title or author
--  Borrow books
--  Return borrowed books
--  Persistent storage using JSON
--  Input validation and error handling
+- View all books
+- View all members
+- Add new books
+- Add new members
+- Remove books
+- Remove members
+- Borrow books
+- Return books
+- View books borrowed by a specific member
+- Search books by title or author
+- Track book availability
+- Prevent borrowed books from being removed
+- Prevent members with borrowed books from being removed
+- Prevent duplicate ISBNs
+- Prevent duplicate member IDs
+- Persistent storage using JSON files
+- Input validation and error handling
 
----
+## Object-Oriented Design
+
+The project uses three main classes:
+
+### Book
+
+Represents a book in the library.
+
+Each book contains:
+
+- Title
+- Author
+- ISBN
+- Availability status
+
+The class also handles:
+
+- Borrowing a book
+- Returning a book
+- Converting a book to and from a dictionary
+
+### Member
+
+Represents a library member.
+
+Each member contains:
+
+- Name
+- Member ID
+- A list of borrowed books
+
+The class also handles:
+
+- Adding borrowed books
+- Removing returned books
+- Checking whether a member borrowed a specific book
+- Displaying borrowed books
+
+### Library
+
+Manages the complete library system.
+
+It handles:
+
+- Books
+- Members
+- Borrowing and returning
+- Searching
+- Adding and removing data
+- Application rules and validation
+
 
 ## Technologies Used
 
 - Python 3
-- Object-Oriented Programming (OOP)
+- Object-Oriented Programming
 - JSON
-- File Handling
+- File handling
+- Type hints
 
----
+## Data Storage
 
-## Project Structure
+Book data is stored in:
 
-```
-Library-Management-System/
-│
-├── library.py
-├── books.json
-├── README.md
-└── .gitignore
+```text
+books.json
 ```
 
----
+Member data is stored in:
 
-## Installation
+```text
+members.json
+```
+Borrowed books are stored by ISBN and reconnected to their corresponding `Book` objects when the program starts.
+
+## How to Run
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/library-management-system.git
+git clone https://github.com/AngelosGkiose/library-management-system.git
 ```
 
-Move into the project folder:
+Move into the project directory:
 
 ```bash
 cd library-management-system
@@ -58,76 +116,64 @@ cd library-management-system
 Run the application:
 
 ```bash
-python library.py
+python main.py
 ```
-
----
 
 ## Menu
 
-```
+```text
 ===== Library Management System =====
 
-1. View Books
-2. Add Book
-3. Delete Book
-4. Search Book
+1. View All Books
+2. View All Members
+3. Add Book
+4. Add Member
 5. Borrow Book
 6. Return Book
-7. Exit
+7. View Member's Borrowed Books
+8. Remove Book
+9. Remove Member
+10. Exit
 ```
 
----
+## Example Book
 
-## Example
-
-```
-1. Title: Atomic Habits
-   Author: James Clear
-   ISBN: 12345
-   Status: Available
+```text
+1. Title: Atomic Habits | Author: James Clear | ISBN: 9780735211292 | Status: Available
 ```
 
-After borrowing:
+## Example Member
 
+```text
+1. Name: John Smith | Member ID: M001 | Borrowed Books: 2
 ```
-1. Title: Atomic Habits
-   Author: James Clear
-   ISBN: 12345
-   Status: Borrowed
-```
-
----
 
 ## What I Learned
 
 This project helped me practice:
 
-- Object-Oriented Programming (Classes & Objects)
-- Class methods and instance methods
-- Object serialization with JSON
-- Converting objects to dictionaries
-- Loading objects from JSON
-- File handling
-- CRUD operations
-- Data validation
-- Error handling
-- Clean code organization
-
----
+- Classes and objects
+- Encapsulation
+- Object relationships
+- Lists of objects
+- Serialization and deserialization
+- JSON persistence
+- Type hints
+- File organization with modules
+- Input validation
+- Searching and filtering
+- Business rules
+- Code reuse
+- Separation of responsibilities
 
 ## Future Improvements
 
-- SQLite database support
-- Multiple copies of the same book
-- Book categories
-- Due dates for borrowed books
-- User accounts
-- Book availability statistics
-- Export library data
-
----
-
-## License
-
-This project is open source and available under the MIT License.
+- Replace JSON storage with SQLite
+- Add book categories
+- Add borrowing dates
+- Add return deadlines
+- Add late return penalties
+- Add multiple copies of the same book
+- Add member contact information
+- Add automated tests with `pytest`
+- Add a graphical or web interface
