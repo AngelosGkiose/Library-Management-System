@@ -7,6 +7,9 @@ from storage import (
     save_books,
     save_members,
 )
+
+MAX_DAYS = 14
+FINE_PER_DAY = 0.50
 BOOKS_FILE = "books.json"
 MEMBERS_FILE = "members.json"
 
@@ -20,7 +23,7 @@ class Library:
             print("No members available.")
             return
         for index, member in enumerate(self.members):
-            member.display_info(index)
+            print(f"{index+1}. {member}")
 
     def add_member(self):
         while True:
@@ -43,47 +46,35 @@ class Library:
             return
 
     def view_members_books(self):
-            if not self.members:
-                print("No members available.")
-                return
-            member_id=input("Enter member id: ").strip()
-            if not member_id:
-                print("Member id cannot be empty.")
-                return
-            for existing_member in self.members:
-                if existing_member.member_id.lower()==member_id.lower():
-                    existing_member.display_borrowed_books()
-                    return
-            print("Member id not found")
+        if not self.members:
+            print("No members available.")
+            return
+
+        member = self.check_member_id()
+
+        if member is None:
+            return
+
+        member.display_borrowed_books()
 
     def remove_member(self):
         self.view_members()
-
-        member_id=input("Enter member id to remove: ").strip()
-        if not member_id:
-            print("Member id cannot be empty.")
+        member=self.check_member_id()
+        if member is None:
             return
-        member_found=False
-        for existing_member in self.members:
-            if existing_member.member_id.lower()==member_id.lower():
-                if existing_member.check_borrowed_books():
-                    self.members.remove(existing_member)
-                    save_members(self.members)
-                    print("Member removed successfully!")
-                    member_found=True
-                    return
-                else:
-                    print("Cannot remove this member. They still have borrowed books.")
-                    return
-        if not member_found:
-            print(f"Member with this id({member_id}) does not exist.")
+        if member.check_borrowed_books():
+            self.members.remove(member)
+            save_members(self.members)
+            print("Member removed successfully!")
+        else:
+            print("Cannot remove this member. They still have borrowed books.")
 
     def view_books(self):
         if not self.books:
             print("No books available.")
             return
         for index, book in enumerate(self.books):
-            book.display_info(index)
+            print(f"{index+1}. {book}")
 
     def add_book(self):
         while True:
@@ -191,35 +182,6 @@ class Library:
         self.books.remove(book)
         save_books(self.books)
         print("Book deleted successfully!")
-
-    def search_book(self):
-        if not self.books:
-            print("No books found.")
-            return
-
-        search_term = input("Enter book title or author: ").strip().lower()
-
-        if not search_term:
-            print("Search term cannot be empty.")
-            return
-
-        results = []
-
-        for book in self.books:
-            if (
-                    search_term in book.title.lower()
-                    or search_term in book.author.lower()
-            ):
-                results.append(book)
-
-        if not results:
-            print("No matching books found.")
-            return
-
-        print("\n===== Search Results =====")
-
-        for index, book in enumerate(results):
-            book.display_info(index)
 
     def borrow_book(self):
         self.view_books()

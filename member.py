@@ -4,8 +4,8 @@ class Member:
         self.member_id = member_id
         self.borrowed_books = []
 
-    def display_info(self, index):
-        print(f"{index + 1}. Name: {self.name} | {self.member_id} | Borrowed Books: {len(self.borrowed_books)}")
+    def __str__(self):
+        return f"{self.name} | {self.member_id} | Borrowed Books:{len(self.borrowed_books)}"
 
     def to_dict(self):
         return{"name":self.name,"member_id":self.member_id,"borrowed_books": [book.isbn for book in self.borrowed_books]}

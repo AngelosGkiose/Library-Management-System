@@ -1,1 +1,14 @@
-[]
+[
+    {
+        "title": "harry",
+        "author": "123",
+        "isbn": "123",
+        "available": true
+    },
+    {
+        "title": "potter",
+        "author": "123",
+        "isbn": "321",
+        "available": true
+    }
+]

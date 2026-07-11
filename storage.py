@@ -16,7 +16,6 @@ def save_books(books):
             data,
             file,
             indent=4,
-            ensure_ascii=False
         )
 
 
@@ -45,8 +44,7 @@ def save_members(members):
         json.dump(
             data,
             file,
-            indent=4,
-            ensure_ascii=False
+            indent=4,   
         )
 
 
