@@ -1,18 +1,11 @@
 class Member:
-    def __init__(self, name, member_id):
+    def __init__(self, name,email,member_id=None):
         self.name = name
+        self.email = email
         self.member_id = member_id
-        self.borrowed_books = []
 
     def __str__(self):
-        return f"{self.name} | {self.member_id} | Borrowed Books:{len(self.borrowed_books)}"
-
-    def to_dict(self):
-        return{"name":self.name,"member_id":self.member_id,"borrowed_books": [book.isbn for book in self.borrowed_books]}
-
-    @staticmethod
-    def from_dict(data):
-        return Member(data["name"], data["member_id"])
+        return f"{self.name} | {self.email} | Borrowed Books:{len(self.borrowed_books)}"
 
     def display_borrowed_books(self):
         if not self.borrowed_books:
