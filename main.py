@@ -19,32 +19,36 @@ def show_menu():
 
 def main():
     library = Library()
-    while True:
-        show_menu()
-        choice = input("Enter choice: ")
-        if choice == "1":
-            library.view_books()
-        elif choice == "2":
-            library.view_members()
-        elif choice == "3":
-            library.add_book()
-        elif choice == "4":
-            library.add_member()
-        elif choice == "5":
-            library.borrow_book()
-        elif choice == "6":
-            library.return_book()
-        elif choice == "7":
-            library.view_members_books()
-        elif choice == "8":
-            library.delete_book()
-        elif choice == "9":
-            library.remove_member()
-        elif choice == "10":
-            print("Bye!")
-            break
-        else:
-            print("Please enter a valid choice (1-10)")
+
+    try:
+        while True:
+            show_menu()
+            choice = input("Enter choice: ").strip()
+            if choice == "1":
+                library.view_books()
+            elif choice == "2":
+                library.view_members()
+            elif choice == "3":
+                library.add_book()
+            elif choice == "4":
+                library.add_member()
+            elif choice == "5":
+                library.borrow_book()
+            elif choice == "6":
+                library.return_book()
+            elif choice == "7":
+                library.view_members_books()
+            elif choice == "8":
+                library.delete_book()
+            elif choice == "9":
+                library.remove_member()
+            elif choice == "10":
+                print("Bye!")
+                break
+            else:
+                print("Please enter a valid choice (1-10).")
+    finally:
+        library.close()
 
 
 if __name__ == '__main__':

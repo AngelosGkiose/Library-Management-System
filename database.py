@@ -9,13 +9,14 @@ class Database:
     def __init__(self):
         self.connection = sqlite3.connect('book.db')
         self.cursor = self.connection.cursor()
+        self.connection.execute("PRAGMA foreign_keys = ON")
 
         self.create_table_member()
         self.create_table_book()
         self.create_table_loans()
 
     def create_table_book(self):
-        self.cursor.execute('''CREATE TABLE book ( 
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS book ( 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT UNIQUE NOT NULL,
         author TEXT NOT NULL,
@@ -24,13 +25,13 @@ class Database:
         self.connection.commit()
 
     def create_table_member(self):
-        self.cursor.execute('''CREATE TABLE member (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL, email TEXT UNIQUE NOT NULL''')
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS member (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL, email TEXT UNIQUE NOT NULL)''')
         self.connection.commit()
 
     def create_table_loans(self):
-        self.cursor.execute("""Create table loans (id INTEGER PRIMARY KEY AUTOINCREMENT,book_id Integer NOT NULL,
-        member_id Integer Not Null,borrow_date TEXT NOT NULL,FOREIGN KEY (book_id) REFERENCES books(id),
-        FOREIGN KEY (member_id) REFERENCES members(id))""")
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS loans (id INTEGER PRIMARY KEY AUTOINCREMENT,book_id Integer  NOT NULL UNIQUE,
+        member_id Integer Not Null,borrow_date TEXT NOT NULL,FOREIGN KEY (book_id) REFERENCES book(id),
+        FOREIGN KEY (member_id) REFERENCES member(id))""")
         self.connection.commit()
 
 
@@ -98,13 +99,33 @@ class Database:
 
     def borrow_book(self, loan):
         try:
-            self.cursor.execute("""Insert into loans(book_id,member_id,borrow_date) values(?,?,?)""",(loan.book_id,loan.member_id,loan.borrow_date))
+            self.cursor.execute("""
+                INSERT INTO loans (
+                    book_id,
+                    member_id,
+                    borrow_date
+                )
+                VALUES (?, ?, ?)
+            """, (
+                loan.book_id,
+                loan.member_id,
+                loan.borrow_date
+            ))
             loan.loan_id = self.cursor.lastrowid
-            self.cursor.execute("Update book set available=0 where book_id=?",(loan.book_id,))
+            self.cursor.execute("""
+                UPDATE book
+                SET available = 0
+                WHERE id = ?
+                  AND available = 1
+            """, (loan.book_id,))
+            if self.cursor.rowcount != 1:
+                self.connection.rollback()
+                return False
             self.connection.commit()
             return True
-        except sqlite3.IntegrityError:
+        except sqlite3.Error as error:
             self.connection.rollback()
+            print(f"Database error: {error}")
             return False
 
     def has_borrowed(self,member,book):
@@ -123,16 +144,73 @@ class Database:
         else:
             return Loan(row[1], row[2], row[3], row[0])
 
-    def return_book(self,loan):
+    def return_book(self, loan):
         try:
-            self.cursor.execute("""Delete from loans where book_id=? and member_id=?""",(loan.book_id,loan.member_id))
-            self.cursor.execute("""Update book set available=1 where book_id=?""",(loan.book_id,))
+            self.cursor.execute("""
+                DELETE FROM loans
+                WHERE id = ?
+            """, (loan.loan_id,))
+            if self.cursor.rowcount != 1:
+                self.connection.rollback()
+                return False
+            self.cursor.execute("""
+                UPDATE book
+                SET available = 1
+                WHERE id = ?
+                  AND available = 0
+            """, (loan.book_id,))
+            if self.cursor.rowcount != 1:
+                self.connection.rollback()
+                return False
             self.connection.commit()
             return True
-        except sqlite3.IntegrityError:
+        except sqlite3.Error as error:
             self.connection.rollback()
+            print(f"Database error: {error}")
             return False
 
+
+    def get_member_borrowed_book(self,member):
+        self.cursor.execute("""Select book.* from book join loans on book.id=loans.book_id where loans.member_id=?""",(member.member_id,))
+        rows=self.cursor.fetchall()
+        member_borrowed_books = []
+        for row in rows:
+            member_borrowed_books.append(Book(row[1], row[2], row[3], row[4], row[0]))
+        return member_borrowed_books
+
+    def remove_book(self,book):
+        try:
+            self.cursor.execute("""Delete from book where id=?""",(book.book_id,))
+            if self.cursor.rowcount != 1:
+                self.connection.rollback()
+                return False
+            self.connection.commit()
+            return True
+        except sqlite3.Error as error:
+            self.connection.rollback()
+            print(f"Database error: {error}")
+            return False
+
+    def has_no_borrowed_books(self,member):
+        self.cursor.execute("""Select * from loans where member_id=?""",(member.member_id,))
+        rows=self.cursor.fetchall()
+        if len(rows)==0:
+            return True
+        else:
+            return False
+
+    def remove_member(self,member):
+        try:
+            self.cursor.execute("""Delete from member where id=?""", (member.member_id,))
+            if self.cursor.rowcount != 1:
+                self.connection.rollback()
+                return False
+            self.connection.commit()
+            return True
+        except sqlite3.Error as error:
+            self.connection.rollback()
+            print(f"Database error: {error}")
+            return False
 
     def close(self):
         self.connection.close()

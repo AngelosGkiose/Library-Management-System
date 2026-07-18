@@ -14,6 +14,47 @@ FINE_PER_DAY = 0.50
 class Library:
     def __init__(self):
         self.database=Database()
+
+    def has_books(self):
+        books = self.database.get_all_books()
+        if not books:
+            print("No books available.")
+            return False
+        for index, book in enumerate(books):
+            print(f"{index + 1}. {book}")
+        return True
+
+    def has_members(self):
+        members = self.database.get_all_members()
+        if not members:
+            print("No members available.")
+            return False
+        for index, member in enumerate(members):
+            print(f"{index + 1}. {member}")
+        return True
+
+    def get_member_from_user(self):
+        member_email = input("Enter member email: ").strip().lower()
+        if not member_email:
+            print("Member email cannot be empty.")
+            return None
+        member = self.database.get_member_by_email(member_email)
+        if member is None:
+            print("Member was not found.")
+            return None
+        return member
+
+    def get_book_from_user(self):
+        book_isbn = input("Enter book ISBN: ").strip()
+        if not book_isbn:
+            print("ISBN cannot be empty.")
+            return None
+        book = self.database.get_book_by_isbn(book_isbn)
+        if book is None:
+            print("Book was not found.")
+            return None
+        return book
+
     def view_members(self):
         members=self.database.get_all_members()
         if not members:
@@ -28,7 +69,7 @@ class Library:
             if not member_name:
                 print("Member name cannot be empty.")
                 continue
-            member_email=input("Enter member email: ").strip()
+            member_email=input("Enter member email: ").strip().lower()
             if not member_email:
                 print("Member email cannot be empty.")
                 continue
@@ -45,26 +86,33 @@ class Library:
             return
 
     def view_members_books(self):
-        if not self.members:
+        members=self.database.get_all_members()
+        if not members:
             print("No members available.")
             return
-
-        member = self.check_member_id()
-
+        member = self.get_member_from_user()
         if member is None:
             return
-
-        member.display_borrowed_books()
+        member_borrowed_books=self.database.get_member_borrowed_book(member)
+        if not member_borrowed_books:
+            print(f"{member.name} has no borrowed books.")
+            return
+        print(f"{member.name} has borrowed :")
+        for index, borrowed_book in enumerate(member_borrowed_books):
+            print(f"{index + 1}. | {borrowed_book.title} ({borrowed_book.isbn})\n")
 
     def remove_member(self):
-        self.view_members()
-        member=self.check_member_id()
+        if not self.has_members():
+            return
+        member = self.get_member_from_user()
         if member is None:
             return
-        if member.check_borrowed_books():
-            self.members.remove(member)
-            save_members(self.members)
-            print("Member removed successfully!")
+        if self.database.has_no_borrowed_books(member):
+            completed=self.database.remove_member(member)
+            if completed:
+                print("Member removed successfully!")
+            else:
+                print("Member did not remove successfully!")
         else:
             print("Cannot remove this member. They still have borrowed books.")
 
@@ -94,8 +142,8 @@ class Library:
             if not book_isbn:
                 print("ISBN cannot be empty.")
                 continue
-            book_ISBN=self.database.get_book_by_isbn(book_isbn)
-            if book_ISBN:
+            existing_book=self.database.get_book_by_isbn(book_isbn)
+            if existing_book:
                 print("A book with this ISBN already exists.")
                 continue
             new_book = Book(
@@ -110,48 +158,31 @@ class Library:
                 print("Book did not add successfully!")
             return
 
-    def check_book(self):
-        while True:
-            if not self.books:
-                print("No books available.")
-                return None
-            self.view_books()
-            book_title = input("Enter book title: ").strip()
-            if not book_title:
-                print("Please enter a valid title")
-                continue
-            for existing_book in self.books:
-                if existing_book.title.lower() == book_title.lower():
-                    return existing_book
-            print("Book not found.")
 
     def delete_book(self):
-        book = self.check_book()
-
+        if not self.has_books():
+            return
+        book = self.get_book_from_user()
         if book is None:
             return
-
         if not book.available:
             print("Cannot remove this book. It is currently borrowed.")
             return
-        self.books.remove(book)
-        save_books(self.books)
-        print("Book deleted successfully!")
+        completed=self.database.remove_book(book)
+        if completed:
+            print("Book deleted successfully!")
+        else:
+            print("Book did not delete successfully!")
 
     def borrow_book(self):
-        self.view_books()
-        member_email = input("Enter member email: ").strip()
-        if not member_email:
-            print("Please enter a valid member email")
+        if not self.has_books():
             return
-        member=self.database.get_member_by_email(member_email)
+        if not self.has_members():
+            return
+        member = self.get_member_from_user()
         if member is None:
             return
-        book_isbn = input("Enter book ISBN: ").strip()
-        if not book_isbn:
-            print("Please enter a valid ISBN")
-            return
-        book=self.database.get_book_by_isbn(book_isbn)
+        book = self.get_book_from_user()
         if book is None:
             return
         if book.borrow():
@@ -161,22 +192,19 @@ class Library:
                 print(f"Book {book.title} borrowed successfully by {member.name}!")
             else:
                 print("Book did not borrow successfully!")
+                book.available = True
         else:
             print("This book is already borrowed.")
 
     def return_book(self):
-        member_email = input("Enter member email: ").strip()
-        if not member_email:
-            print("Please enter a valid member email")
+        if not self.has_books():
             return
-        member = self.database.get_member_by_email(member_email)
+        if not self.has_members():
+            return
+        member = self.get_member_from_user()
         if member is None:
             return
-        book_isbn = input("Enter book ISBN: ").strip()
-        if not book_isbn:
-            print("Please enter a valid ISBN")
-            return
-        book=self.database.get_book_by_isbn(book_isbn)
+        book = self.get_book_from_user()
         if book is None:
             return
         if not self.database.has_borrowed(member,book):
@@ -184,20 +212,25 @@ class Library:
             return
         loan=self.database.get_loan(member,book)
         if loan is None:
+            print("Loan was not found.")
             return
         days = loan.days_borrowed()
-
-        borrowed=book.return_book()
-        if  not borrowed:
+        returned =book.return_book()
+        if  not returned :
             print("This book isn't borrowed yet.")
             return
         completed=self.database.return_book(loan)
         if completed:
             print(f"Book {book.title} returned successfully by {member.name}!")
         else:
-            print("Book did not return successfully!")
+            print("Book could not be returned.")
+            book.available = False
+            return
 
         if days > MAX_DAYS:
             overdue_days = days - MAX_DAYS
             fine = overdue_days * FINE_PER_DAY
             print(f"Late return: {overdue_days} days overdue. Fine: €{fine:.2f}")
+
+    def close(self):
+        self.database.close()

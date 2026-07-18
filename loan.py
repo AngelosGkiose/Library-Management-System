@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 
 
 class Loan:
@@ -11,5 +11,6 @@ class Loan:
     def days_borrowed(self):
         if self.borrow_date is None:
             return 0
-        return (datetime.now() - self.borrow_date).days
+        borrow_date = date.fromisoformat(self.borrow_date)
+        return (date.today() - borrow_date).days
 
