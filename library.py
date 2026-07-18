@@ -29,31 +29,39 @@ class Library:
         if not members:
             print("No members available.")
             return False
-        for index, member in enumerate(members):
-            print(f"{index + 1}. {member}")
         return True
 
     def get_member_from_user(self):
-        member_email = input("Enter member email: ").strip().lower()
-        if not member_email:
-            print("Member email cannot be empty.")
-            return None
-        member = self.database.get_member_by_email(member_email)
-        if member is None:
-            print("Member was not found.")
-            return None
-        return member
+        while True:
+            member_email = input(
+                "Enter member email (0 to cancel): "
+            ).strip().lower()
+            if member_email == "0":
+                return None
+            if not member_email:
+                print("Member email cannot be empty.")
+                continue
+            member = self.database.get_member_by_email(member_email)
+            if member is None:
+                print("Member was not found.")
+                continue
+            return member
 
     def get_book_from_user(self):
-        book_isbn = input("Enter book ISBN: ").strip()
-        if not book_isbn:
-            print("ISBN cannot be empty.")
-            return None
-        book = self.database.get_book_by_isbn(book_isbn)
-        if book is None:
-            print("Book was not found.")
-            return None
-        return book
+        while True:
+            book_isbn = input(
+                "Enter book ISBN (0 to cancel): "
+            ).strip()
+            if book_isbn == "0":
+                return None
+            if not book_isbn:
+                print("ISBN cannot be empty.")
+                continue
+            book = self.database.get_book_by_isbn(book_isbn)
+            if book is None:
+                print("Book was not found.")
+                continue
+            return book
 
     def view_members(self):
         members=self.database.get_all_members()
@@ -72,6 +80,9 @@ class Library:
             member_email=input("Enter member email: ").strip().lower()
             if not member_email:
                 print("Member email cannot be empty.")
+                continue
+            if "@" not in member_email or "." not in member_email:
+                print("Please enter a valid email address.")
                 continue
             old_member=self.database.get_member_by_email(member_email)
             if old_member:
@@ -102,7 +113,9 @@ class Library:
             print(f"{index + 1}. | {borrowed_book.title} ({borrowed_book.isbn})\n")
 
     def remove_member(self):
-        if not self.has_members():
+        members=self.database.get_all_members()
+        if not members:
+            print("No members available.")
             return
         member = self.get_member_from_user()
         if member is None:
@@ -129,10 +142,6 @@ class Library:
             book_title = input("Enter book title: ").strip()
             if not book_title:
                 print("Book title cannot be empty.")
-                continue
-            book=self.database.get_book_by_title(book_title)
-            if  book:
-                print("Book with this title already exists.")
                 continue
             book_author = input("Enter book author: ").strip()
             if not book_author:

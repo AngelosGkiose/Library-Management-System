@@ -18,7 +18,7 @@ class Database:
     def create_table_book(self):
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS book ( 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT UNIQUE NOT NULL,
+        title TEXT  NOT NULL,
         author TEXT NOT NULL,
         isbn TEXT UNIQUE NOT NULL,
         available INTEGER NOT NULL DEFAULT 1)''')
@@ -34,14 +34,6 @@ class Database:
         FOREIGN KEY (member_id) REFERENCES member(id))""")
         self.connection.commit()
 
-
-    def get_book_by_title(self, title):
-        self.cursor.execute('''SELECT * FROM book WHERE title = ?''', (title,))
-        book = self.cursor.fetchone()
-        if book is None:
-            return None
-        else:
-            return Book(book[1], book[2], book[3], book[4], book[0])
 
     def get_book_by_isbn(self, isbn):
         self.cursor.execute('''SELECT * FROM book WHERE isbn = ?''', (isbn,))
