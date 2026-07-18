@@ -85,20 +85,6 @@ The project contains five main classes:
 * `Database` — handles SQLite tables, queries, and transactions
 * `Library` — handles validation and application rules
 
-## Project Structure
-
-```text
-Library-Management-System/
-│
-├── main.py
-├── library.py
-├── database.py
-├── book.py
-├── member.py
-├── loan.py
-├── README.md
-└── .gitignore
-```
 
 ## Technologies Used
 
